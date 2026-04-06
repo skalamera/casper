@@ -1,5 +1,5 @@
 import { app, BrowserWindow } from 'electron'
-import { electronApp, optimizer } from '@electron-toolkit/utils'
+import { electronApp } from '@electron-toolkit/utils'
 import { windowManager } from './windows/window-manager'
 import { registerIpcHandlers } from './ipc/handlers'
 import { registerShortcuts, unregisterShortcuts } from './shortcuts/shortcut-manager'
@@ -19,11 +19,6 @@ app.on('window-all-closed', () => {
 app.whenReady().then(async () => {
   // Set app user model id for Windows notifications
   electronApp.setAppUserModelId('com.casper.app')
-
-  // Optimize for Electron's security model in dev
-  app.on('browser-window-created', (_, window) => {
-    optimizer.watchShortcuts(window)
-  })
 
   // Register all IPC handlers before creating windows
   registerIpcHandlers()

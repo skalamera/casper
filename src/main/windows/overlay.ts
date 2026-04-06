@@ -21,7 +21,6 @@ export async function createOverlayWindow(): Promise<BrowserWindow> {
 
     // Always on top at the highest level
     alwaysOnTop: true,
-    type: 'panel',        // macOS: panel windows have special capture behavior
 
     // Hide from taskbar / dock
     skipTaskbar: true,

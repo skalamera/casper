@@ -88,7 +88,7 @@ export interface ContextDocument {
 export interface Settings {
   overlayOpacity: number
   overlayPosition: { x: number; y: number }
-  model: 'claude-sonnet-4-20250514' | 'claude-opus-4-20250514'
+  model: 'gemini-2.0-flash' | 'gemini-2.5-pro'
   autoTrigger: boolean
   autoTriggerDebounceMs: number
   micDeviceId: string | null
@@ -97,7 +97,7 @@ export interface Settings {
 
 export interface SecureKeys {
   deepgramApiKey: string
-  anthropicApiKey: string
+  geminiApiKey: string
 }
 
 export interface AiRequest {

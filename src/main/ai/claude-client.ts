@@ -1,4 +1,4 @@
-import Anthropic from '@anthropic-ai/sdk'
+import { GoogleGenerativeAI, HarmCategory, HarmBlockThreshold } from '@google/generative-ai'
 import { buildPrompt } from './prompt-builder'
 import { secureStore } from '../storage/secure-store'
 import type { ResponseMode, TranscriptEntry, ContextDocument } from '../ipc/channels'
@@ -15,7 +15,7 @@ interface SuggestionRequest {
   onError: (err: Error) => void
 }
 
-class ClaudeClient {
+class GeminiClient {
   private abortController: AbortController | null = null
   private isStreaming = false
 
@@ -23,13 +23,12 @@ class ClaudeClient {
     // Cancel any in-flight request
     this.cancel()
 
-    const { anthropicApiKey } = secureStore.getKeys()
-    if (!anthropicApiKey) {
-      opts.onError(new Error('Anthropic API key not configured. Open Settings to add your key.'))
+    const { geminiApiKey } = secureStore.getKeys()
+    if (!geminiApiKey) {
+      opts.onError(new Error('Gemini API key not configured. Open Settings to add your key.'))
       return
     }
 
-    const client = new Anthropic({ apiKey: anthropicApiKey })
     this.abortController = new AbortController()
     this.isStreaming = true
 
@@ -42,26 +41,35 @@ class ClaudeClient {
     })
 
     try {
-      const stream = client.messages.stream(
-        {
-          model: opts.model,
-          max_tokens: 1024,
-          system,
-          messages: [{ role: 'user', content: user }]
-        },
+      const genAI = new GoogleGenerativeAI(geminiApiKey)
+      const model = genAI.getGenerativeModel({
+        model: opts.model,
+        systemInstruction: system,
+        // Relax safety settings — interview content is benign but may trigger false positives
+        safetySettings: [
+          { category: HarmCategory.HARM_CATEGORY_HARASSMENT, threshold: HarmBlockThreshold.BLOCK_ONLY_HIGH },
+          { category: HarmCategory.HARM_CATEGORY_HATE_SPEECH, threshold: HarmBlockThreshold.BLOCK_ONLY_HIGH },
+          { category: HarmCategory.HARM_CATEGORY_SEXUALLY_EXPLICIT, threshold: HarmBlockThreshold.BLOCK_ONLY_HIGH },
+          { category: HarmCategory.HARM_CATEGORY_DANGEROUS_CONTENT, threshold: HarmBlockThreshold.BLOCK_ONLY_HIGH }
+        ]
+      })
+
+      const result = await model.generateContentStream(
+        { contents: [{ role: 'user', parts: [{ text: user }] }] },
         { signal: this.abortController.signal }
       )
 
-      for await (const event of stream) {
-        if (event.type === 'content_block_delta' && event.delta.type === 'text_delta') {
-          opts.onChunk(event.delta.text)
-        }
+      for await (const chunk of result.stream) {
+        if (this.abortController?.signal.aborted) break
+        const text = chunk.text()
+        if (text) opts.onChunk(text)
       }
 
-      opts.onDone()
+      if (!this.abortController?.signal.aborted) {
+        opts.onDone()
+      }
     } catch (err: unknown) {
-      if (err instanceof Error && err.name === 'AbortError') {
-        // Normal cancellation — don't report as error
+      if (err instanceof Error && (err.name === 'AbortError' || err.message.includes('aborted'))) {
         return
       }
       opts.onError(err instanceof Error ? err : new Error(String(err)))
@@ -84,4 +92,5 @@ class ClaudeClient {
   }
 }
 
-export const claudeClient = new ClaudeClient()
+// Export with the same name so handlers.ts import is unchanged
+export const claudeClient = new GeminiClient()

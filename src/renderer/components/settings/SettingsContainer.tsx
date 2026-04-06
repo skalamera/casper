@@ -4,14 +4,14 @@ import { useContextStore } from '../../stores/context-store'
 
 interface Keys {
   deepgramApiKey: string
-  anthropicApiKey: string
+  geminiApiKey: string
 }
 
 export function SettingsContainer() {
-  const [keys, setKeys] = useState<Keys>({ deepgramApiKey: '', anthropicApiKey: '' })
+  const [keys, setKeys] = useState<Keys>({ deepgramApiKey: '', geminiApiKey: '' })
   const [saved, setSaved] = useState(false)
-  const [model, setModel] = useState<'claude-sonnet-4-20250514' | 'claude-opus-4-20250514'>(
-    'claude-sonnet-4-20250514'
+  const [model, setModel] = useState<'gemini-2.0-flash' | 'gemini-2.5-pro'>(
+    'gemini-2.0-flash'
   )
   const [autoTrigger, setAutoTrigger] = useState(true)
   const { setResume, setJobDescription } = useContextStore()
@@ -20,7 +20,7 @@ export function SettingsContainer() {
     // Load existing keys and settings
     Promise.all([window.casper.settings.getKeys(), window.casper.settings.get()]).then(
       ([k, s]) => {
-        setKeys({ deepgramApiKey: k.deepgramApiKey, anthropicApiKey: k.anthropicApiKey })
+        setKeys({ deepgramApiKey: k.deepgramApiKey, geminiApiKey: k.geminiApiKey })
         setModel(s.model)
         setAutoTrigger(s.autoTrigger)
       }
@@ -35,7 +35,7 @@ export function SettingsContainer() {
   const handleSave = async () => {
     await Promise.all([
       window.casper.settings.setKey('deepgramApiKey', keys.deepgramApiKey),
-      window.casper.settings.setKey('anthropicApiKey', keys.anthropicApiKey),
+      window.casper.settings.setKey('geminiApiKey', keys.geminiApiKey),
       window.casper.settings.set({ model, autoTrigger })
     ])
     setSaved(true)
@@ -83,9 +83,9 @@ export function SettingsContainer() {
             </div>
             <div>
               <label className="block text-xs font-medium text-zinc-400 mb-1.5">
-                Anthropic API Key
+                Gemini API Key
                 <a
-                  href="https://console.anthropic.com"
+                  href="https://aistudio.google.com/app/apikey"
                   className="ml-2 text-indigo-400 hover:text-indigo-300"
                   target="_blank"
                 >
@@ -94,9 +94,9 @@ export function SettingsContainer() {
               </label>
               <input
                 type="password"
-                value={keys.anthropicApiKey}
-                onChange={(e) => setKeys((k) => ({ ...k, anthropicApiKey: e.target.value }))}
-                placeholder="sk-ant-••••••••••••••••"
+                value={keys.geminiApiKey}
+                onChange={(e) => setKeys((k) => ({ ...k, geminiApiKey: e.target.value }))}
+                placeholder="AIza••••••••••••••••••••••••••••••••••••"
                 className="w-full bg-zinc-900 border border-zinc-700 rounded-lg px-3 py-2 text-sm text-zinc-200 placeholder-zinc-600 focus:outline-none focus:border-indigo-500 transition-colors"
               />
             </div>
@@ -126,8 +126,8 @@ export function SettingsContainer() {
           <div className="space-y-2">
             {(
               [
-                { id: 'claude-sonnet-4-20250514', label: 'Claude Sonnet', desc: 'Faster · Recommended' },
-                { id: 'claude-opus-4-20250514', label: 'Claude Opus', desc: 'Smarter · Slower' }
+                { id: 'gemini-2.0-flash', label: 'Gemini 2.0 Flash', desc: 'Faster · Recommended' },
+                { id: 'gemini-2.5-pro', label: 'Gemini 2.5 Pro', desc: 'Smarter · Slower' }
               ] as const
             ).map((m) => (
               <label

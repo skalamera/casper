@@ -30,10 +30,10 @@ class SecureStore {
     }
   }
 
-  getKeys(): { deepgramApiKey: string; anthropicApiKey: string } {
+  getKeys(): { deepgramApiKey: string; geminiApiKey: string } {
     return {
       deepgramApiKey: this.getKey('deepgramApiKey') ?? '',
-      anthropicApiKey: this.getKey('anthropicApiKey') ?? ''
+      geminiApiKey: this.getKey('geminiApiKey') ?? ''
     }
   }
 

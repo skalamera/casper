@@ -4,7 +4,7 @@ import type { Settings } from '../ipc/channels'
 const DEFAULT_SETTINGS: Settings = {
   overlayOpacity: 0.95,
   overlayPosition: { x: -1, y: -1 }, // -1 = use default (right edge)
-  model: 'claude-sonnet-4-20250514',
+  model: 'gemini-2.0-flash',
   autoTrigger: true,
   autoTriggerDebounceMs: 2000,
   micDeviceId: null,

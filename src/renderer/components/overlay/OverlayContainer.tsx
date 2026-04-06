@@ -72,9 +72,9 @@ export function OverlayContainer() {
           <button
             onClick={() => setMinimized(true)}
             title="Minimize (⌘⇧M)"
-            className="w-5 h-5 rounded flex items-center justify-center text-zinc-400 hover:text-zinc-100 hover:bg-zinc-700/50 transition-all text-xs"
+            className="w-5 h-5 rounded flex items-center justify-center text-zinc-400 hover:text-zinc-100 hover:bg-zinc-700/50 transition-all text-sm leading-none"
           >
-            _
+            −
           </button>
 
           {/* Settings */}

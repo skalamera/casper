@@ -26,7 +26,7 @@ export function ModeSelector() {
           }`}
         >
           <span>{m.emoji}</span>
-          <span className="hidden sm:inline">{m.label}</span>
+          <span>{m.label}</span>
         </button>
       ))}
     </div>

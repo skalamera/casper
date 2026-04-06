@@ -17,9 +17,9 @@
   "author": "",
   "license": "MIT",
   "dependencies": {
-    "@google/generative-ai": "^0.24.0",
     "@deepgram/sdk": "^3.9.0",
-    "electron-store": "^10.0.0",
+    "@google/generative-ai": "^0.24.0",
+    "electron-store": "^8.2.0",
     "pdf-parse": "^1.1.1"
   },
   "devDependencies": {

@@ -119,6 +119,16 @@ export function registerIpcHandlers(): void {
     }
   })
 
+  // ── Dialog ────────────────────────────────────────────────────────────────
+  ipcMain.handle(IPC.DIALOG_OPEN_FILE, async (_event, filters: Electron.FileFilter[]) => {
+    const win = BrowserWindow.getFocusedWindow() ?? BrowserWindow.getAllWindows()[0]
+    const result = await dialog.showOpenDialog(win!, {
+      properties: ['openFile'],
+      filters
+    })
+    return result.canceled ? null : result.filePaths[0]
+  })
+
   ipcMain.handle(IPC.SESSION_EXPORT, async (_event, format: 'markdown' | 'text') => {
     const overlay = BrowserWindow.getAllWindows()[0]
     if (!overlay) return

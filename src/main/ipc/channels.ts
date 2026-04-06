@@ -42,6 +42,9 @@ export const IPC = {
   // ── Session ────────────────────────────────────────────────────────────────
   SESSION_EXPORT: 'session:export',
   SESSION_GET_STATUS: 'session:get-status',
+
+  // ── Dialog ─────────────────────────────────────────────────────────────────
+  DIALOG_OPEN_FILE: 'dialog:open-file',
 } as const
 
 export type IpcChannel = (typeof IPC)[keyof typeof IPC]

@@ -116,6 +116,12 @@ const casperAPI = {
     export: (format: 'markdown' | 'text') => ipcRenderer.invoke(IPC.SESSION_EXPORT, format)
   },
 
+  // ── Dialog ────────────────────────────────────────────────────────────────
+  dialog: {
+    openFile: (filters: { name: string; extensions: string[] }[]): Promise<string | null> =>
+      ipcRenderer.invoke(IPC.DIALOG_OPEN_FILE, filters)
+  },
+
   // ── Shortcuts (from main to renderer) ─────────────────────────────────────
   shortcuts: {
     onTriggerAi: (cb: (data: { mode: ResponseMode }) => void) => {

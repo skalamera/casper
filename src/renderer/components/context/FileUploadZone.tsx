@@ -1,15 +1,16 @@
-import React, { useCallback, useRef, useState } from 'react'
+import React, { useCallback, useState } from 'react'
 import { useContextStore } from '../../stores/context-store'
 
 interface FileUploadZoneProps {
   type: 'resume' | 'jobDescription'
 }
 
+const FILE_FILTERS = [{ name: 'Documents', extensions: ['pdf', 'txt', 'md'] }]
+
 export function FileUploadZone({ type }: FileUploadZoneProps) {
   const [dragging, setDragging] = useState(false)
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
-  const inputRef = useRef<HTMLInputElement>(null)
   const { resume, jobDescription, setResume, setJobDescription } = useContextStore()
 
   const current = type === 'resume' ? resume : jobDescription
@@ -30,25 +31,31 @@ export function FileUploadZone({ type }: FileUploadZoneProps) {
     [type, setDoc]
   )
 
+  // Use Electron's native dialog — avoids the file.path undefined issue
+  const handleBrowse = useCallback(async () => {
+    const filePath = await window.casper.dialog.openFile(FILE_FILTERS)
+    if (filePath) await processFile(filePath)
+  }, [processFile])
+
+  // Drag-and-drop: get path from Electron's webUtils if available, else fall back to dialog
   const handleDrop = useCallback(
     async (e: React.DragEvent) => {
       e.preventDefault()
       setDragging(false)
+
       const file = e.dataTransfer.files[0]
       if (!file) return
-      // @ts-ignore — Electron exposes path on File objects
-      await processFile(file.path)
-    },
-    [processFile]
-  )
 
-  const handleFileChange = useCallback(
-    async (e: React.ChangeEvent<HTMLInputElement>) => {
-      const file = e.target.files?.[0]
-      if (!file) return
-      // @ts-ignore
-      await processFile(file.path)
-      e.target.value = ''
+      // Electron exposes getPathForFile on the window object in the renderer
+      const getPath = (window as any).electron?.webUtils?.getPathForFile
+      if (typeof getPath === 'function') {
+        const filePath: string = getPath(file)
+        if (filePath) { await processFile(filePath); return }
+      }
+
+      // Fallback: open native dialog so user can confirm the file
+      const filePath = await window.casper.dialog.openFile(FILE_FILTERS)
+      if (filePath) await processFile(filePath)
     },
     [processFile]
   )
@@ -82,7 +89,7 @@ export function FileUploadZone({ type }: FileUploadZoneProps) {
             Remove
           </button>
         </div>
-        <div className="mt-3 text-xs text-zinc-400 line-clamp-3 font-mono bg-zinc-900/50 rounded-lg p-2">
+        <div className="mt-3 text-xs text-zinc-400 line-clamp-3 font-mono bg-zinc-900/50 rounded-lg p-2 selectable">
           {current.text.slice(0, 200)}…
         </div>
       </div>
@@ -96,7 +103,7 @@ export function FileUploadZone({ type }: FileUploadZoneProps) {
         onDragLeave={() => setDragging(false)}
         onDragOver={(e) => e.preventDefault()}
         onDrop={handleDrop}
-        onClick={() => inputRef.current?.click()}
+        onClick={handleBrowse}
         className={`rounded-xl border-2 border-dashed p-6 text-center cursor-pointer transition-all ${
           dragging
             ? 'border-indigo-500 bg-indigo-950/30'
@@ -111,14 +118,6 @@ export function FileUploadZone({ type }: FileUploadZoneProps) {
       </div>
 
       {error && <p className="mt-2 text-xs text-red-400">{error}</p>}
-
-      <input
-        ref={inputRef}
-        type="file"
-        accept=".pdf,.txt,.md"
-        onChange={handleFileChange}
-        className="hidden"
-      />
     </div>
   )
 }

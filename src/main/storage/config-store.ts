@@ -1,9 +1,9 @@
-import Store from 'electron-store'
+import { JsonStore } from './json-store'
 import type { Settings } from '../ipc/channels'
 
 const DEFAULT_SETTINGS: Settings = {
   overlayOpacity: 0.95,
-  overlayPosition: { x: -1, y: -1 }, // -1 = use default (right edge)
+  overlayPosition: { x: -1, y: -1 },
   model: 'gemini-2.0-flash',
   autoTrigger: true,
   autoTriggerDebounceMs: 2000,
@@ -11,11 +11,8 @@ const DEFAULT_SETTINGS: Settings = {
   theme: 'dark'
 }
 
-const store = new Store<{ settings: Settings }>({
-  name: 'casper-config',
-  defaults: {
-    settings: DEFAULT_SETTINGS
-  }
+const store = new JsonStore<{ settings: Settings }>('casper-config', {
+  settings: DEFAULT_SETTINGS
 })
 
 class ConfigStore {

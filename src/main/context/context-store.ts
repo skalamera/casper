@@ -1,19 +1,15 @@
 import { parsePdf, parseTxt } from './pdf-parser'
 import { estimateTokens } from '../ai/prompt-builder'
-import Store from 'electron-store'
+import { JsonStore } from '../storage/json-store'
 import type { ContextDocument } from '../ipc/channels'
-import { extname } from 'path'
-import { basename } from 'path'
+import { extname, basename } from 'path'
 
-const store = new Store<{
+const store = new JsonStore<{
   resume: ContextDocument | null
   jobDescription: ContextDocument | null
-}>({
-  name: 'casper-context',
-  defaults: {
-    resume: null,
-    jobDescription: null
-  }
+}>('casper-context', {
+  resume: null,
+  jobDescription: null
 })
 
 class ContextStore {
